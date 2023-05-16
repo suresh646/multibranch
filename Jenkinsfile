@@ -1,25 +1,46 @@
-node
+pipeline
 {
-    stage('ContinuousDownload')
+    agent any
+    stages
     {
-        git 'https://github.com/sureshnemala/maven.git'
-    }
-    stage('ContinuousBuild')
-    {
-        sh 'mvn package'
-    }
-    stage('ContinuousDeploy')
-    {
-        deploy adapters: [tomcat9(credentialsId: '3d998c6a-a626-457b-95ff-87ffe25022bb', path: '', url: 'http://172.31.29.233:8080')], contextPath: 'test', war: '**/*.war'
-    }
-    stage('ContinuousTesting')
-    {
-        git 'https://github.com/sureshnemala/FunctionalTesting.git'
-        
-        sh 'java -jar /var/lib/jenkins/workspace/scripted/testing.jar'
-    }
-    stage('ContinuousDelivery')
-    {
-        deploy adapters: [tomcat9(credentialsId: '3d998c6a-a626-457b-95ff-87ffe25022bb', path: '', url: 'http://172.31.20.131:8080')], contextPath: 'prod', war: '**/*.war'
+        stage('ContinuousDownload')
+        {
+            steps
+            {
+                git 'https://github.com/suresh646/maven.git'   
+            }
+        }
+        stage('Continuousbuild')
+        {
+            steps
+            {
+                sh 'mvn package'
+            }
+        }
+        stage('Continuousdeploy')
+        {
+            steps
+            {
+                deploy adapters: [tomcat9(credentialsId: '39da5159-c3e1-4235-bcd1-af956991575c', path: '', url: 'http://172.31.35.67:8080')], contextPath: 'test', war: '**/*.war'
+            }
+        }
+        stage('ContinuousTesting')
+        {
+            steps
+            {
+                git 'https://github.com/suresh646/FunctionalTesting.git'
+                
+                sh 'java -jar /var/lib/jenkins/workspace/declarative/testing.jar'
+            }
+        }
+        stage('continousDelivery')
+        {
+            steps
+            {
+                input message: 'waiting for approval', submitter: 'sureshadmin'
+                
+                deploy adapters: [tomcat9(credentialsId: '39da5159-c3e1-4235-bcd1-af956991575c', path: '', url: 'http://172.31.35.25:8080')], contextPath: 'prod', war: '**/*.war'
+            }
+        }
     }
 }
